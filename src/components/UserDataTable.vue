@@ -21,14 +21,14 @@
       </template>
 
       <template v-slot:item.lesson_MW="{ item }">
-        <v-checkbox-btn v-model="item.lesson_MW" :ripple="false"></v-checkbox-btn>
+        <v-checkbox-btn v-model="item.lesson_MW" :ripple="false" />
       </template>
       <template v-slot:item.lesson_TT="{ item }">
-        <v-checkbox-btn v-model="item.lesson_TT" :ripple="false"></v-checkbox-btn>
+        <v-checkbox-btn v-model="item.lesson_TT" :ripple="false" />
       </template>
     </v-data-table>
   </v-sheet>
-  <user-data-input />
+  <user-data-input @addUser="handleUser" />
 </template>
 
 <script setup>
@@ -43,8 +43,13 @@ const headers = [
   { title: 'Actions', key: 'actions', align: 'end' },
 ];
 
-function remove(id) {
+const handleUser = (user) => {
+  users.value = [...users.value, user];
+  console.log(user);
+};
+
+const remove = (id) => {
   const index = users.value.findIndex((user) => user.id === id);
   users.value.splice(index, 1);
-}
+};
 </script>
