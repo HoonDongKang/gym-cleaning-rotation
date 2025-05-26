@@ -28,15 +28,17 @@
       </template>
     </v-data-table>
   </v-sheet>
-  <user-data-input @addUser="handleUser" />
+  <user-data-input v-bind="{ total: users.length }" @addUser="handleUser" />
 </template>
 
 <script setup>
 import { ref } from 'vue';
 import UserDataInput from './UserDataInput.vue';
 
-const users = ref([{ name: 'a', lesson_MW: true, lesson_TT: true }]);
+// const users = ref([{ index: 1, name: 'a', lesson_MW: true, lesson_TT: true }]);
+const users = ref([]);
 const headers = [
+  { title: '순서', key: 'index' },
   { title: '회원명', key: 'name' },
   { title: '월/수 레슨 여부', key: 'lesson_MW' },
   { title: '화/목 레슨 여부', key: 'lesson_TT' },
@@ -45,7 +47,6 @@ const headers = [
 
 const handleUser = (user) => {
   users.value = [...users.value, user];
-  console.log(user);
 };
 
 const remove = (id) => {

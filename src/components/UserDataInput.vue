@@ -2,30 +2,33 @@
   <v-sheet>
     <v-row>
       <v-col cols="3">
-        <v-text-field v-model:model-value="user.name"></v-text-field>
+        <v-text-field v-model="user.name"></v-text-field>
       </v-col>
       <v-col cols="3">
-        <v-checkbox-btn
-          v-model:model-value="user.lesson_MW"
-          @keydown.enter.native="toggleCheckBox('mw')"
-        />
+        <v-checkbox-btn v-model="user.lesson_MW" @keydown.enter.native="toggleCheckBox('mw')" />
       </v-col>
       <v-col cols="3">
-        <v-checkbox-btn
-          v-model:model-value="user.lesson_TT"
-          @keydown.enter.native="toggleCheckBox('tt')"
-        />
+        <v-checkbox-btn v-model="user.lesson_TT" @keydown.enter.native="toggleCheckBox('tt')" />
       </v-col>
       <v-col cols="3"> <v-btn @click="emitUser">추가</v-btn> </v-col>
     </v-row>
   </v-sheet>
 </template>
 <script setup>
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 
 const emit = defineEmits(['addUser']);
-const RESET_USER = { name: '', lesson_MW: false, lesson_TT: false };
-let user = ref({ ...RESET_USER });
+const props = defineProps({
+  total: Number,
+});
+const createResetUser = () => ({
+  index: props.total + 1,
+  name: '',
+  lesson_MW: false,
+  lesson_TT: false,
+});
+
+const user = ref(createResetUser());
 
 const toggleCheckBox = (type) => {
   if (type === 'mw') {
@@ -36,7 +39,10 @@ const toggleCheckBox = (type) => {
 };
 
 const emitUser = () => {
-  emit('addUser', user.value);
-  user.value = { ...RESET_USER };
+  emit('addUser', {
+    ...user.value,
+    index: props.total + 1,
+  });
+  user.value = createResetUser();
 };
 </script>
