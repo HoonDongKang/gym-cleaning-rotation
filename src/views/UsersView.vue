@@ -13,5 +13,4 @@
 
 <script setup>
 import ExcelBtnGroup from '@/components/ExcelBtnGroup.vue';
-import UserDataTable from '@/components/UserDataTable.vue';
 </script>

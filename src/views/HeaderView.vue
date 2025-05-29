@@ -1,40 +1,68 @@
 <template>
-  <v-app-bar flat color="white" height="80" class="px-6 py-3 shadow-sm rounded-b-xl">
-    <!-- 왼쪽 로고 -->
-    <v-img :src="cleaningLogo" alt="Cleaning Rotation Logo" />
+  <v-app-bar elevation="1" color="white" height="64" class="px-6">
+    <div class="d-flex align-center">
+      <v-img
+        :src="cleaningLogo"
+        alt="Cleaning Rotation Logo"
+        width="60"
+        height="60"
+        contain
+        class="mr-3"
+      />
 
-    <v-spacer></v-spacer>
-
-    <!-- 오른쪽 메뉴 버튼들 -->
-    <div class="d-flex align-center gap-4">
-      <v-btn variant="text" color="primary" class="text-button">회원 생성</v-btn>
-      <v-btn variant="text" color="primary" class="text-button">스케쥴표 생성</v-btn>
+      <v-toolbar flat color="transparent" class="pa-0 ma-0 elevation-0 transparent-toolbar">
+        <v-toolbar-title class="text-h6 font-weight-bold text-grey-darken-4">
+          Cleaning Gym
+        </v-toolbar-title>
+      </v-toolbar>
     </div>
+
+    <v-spacer />
+
+    <!-- Navigation Menu -->
+    <div class="d-flex align-center mr-8">
+      <v-btn
+        v-for="item in menuItems"
+        :key="item.name"
+        variant="text"
+        color="grey-darken-2"
+        class="mx-2"
+        @click="navigateTo(item.route)"
+      >
+        {{ item.name }}
+      </v-btn>
+    </div>
+
+    <!-- User Avatar -->
+    <v-avatar size="40">
+      <v-img
+        src="https://lh3.googleusercontent.com/aida-public/AB6AXuD6RCMwJXvLaPVw13DR3ZOyj3eAQ-kX11lnS8-7AvMzPdJmZTQSlLAWSO2ecpOzfx8BtIPdD1cYXrocmQSuKazcvM6Vf201bd4kHDKcqQ4qd2va8kuVJWC_-PfqGbYPp41EQNGxiAXRWexN5rddKAnuHIqE01vYU58aUaineREc4bzFzKiwZWX9ck2ZQR34D4cmDXD3gS-DuMhXfIW6To6NMYZoEaa8KbzEGCPtvLK-2B0KkAqUW0Ag4mI4Ak1vsSXe3xr0GgqJuia3"
+        alt="User Avatar"
+      />
+    </v-avatar>
   </v-app-bar>
 </template>
 
 <script setup>
+import { ref } from 'vue';
 import cleaningLogo from '@/assets/cleaning.png';
+
+// Menu items
+const menuItems = ref([
+  { name: 'Home', route: '/' },
+  { name: 'Members', route: '/members' },
+  { name: 'Schedule', route: '/schedule' },
+  { name: 'Settings', route: '/settings' },
+]);
+
+// Navigation handler
+const navigateTo = (route) => {
+  // Implement your navigation logic here
+  console.log(`Navigating to: ${route}`);
+  // Example: router.push(route)
+};
 </script>
 
 <style scoped>
-.shadow-sm {
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
-}
-
-.rounded-b-xl {
-  border-bottom-left-radius: 16px;
-  border-bottom-right-radius: 16px;
-}
-
-.gap-4 {
-  gap: 1rem;
-}
-
-.text-button {
-  font-weight: 500;
-  font-size: 16px;
-  letter-spacing: 0.3px;
-  text-transform: none;
-}
+/* Custom styles if needed */
 </style>

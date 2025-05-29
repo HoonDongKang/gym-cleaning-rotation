@@ -33,7 +33,6 @@ const uploadFile = () => {
 };
 
 const handleFileChange = async (event) => {
-  console.log(event);
   const file = event.target.files[0];
   if (!file) return;
   selectedFile.value = file;
@@ -55,8 +54,6 @@ const handleFileChange = async (event) => {
     });
 
     excelData.value = data;
-
-    console.log(excelData.value);
   } catch (e) {
     console.error('파일 읽기 오류', error);
   }
