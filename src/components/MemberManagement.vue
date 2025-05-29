@@ -6,8 +6,8 @@
     <div style="max-width: 1200px; width: 100%">
       <!-- Page Header -->
       <div class="mb-6 text-center">
-        <h1 class="text-h4 font-weight-bold text-grey-darken-4 mb-2">Member List</h1>
-        <p class="text-body-1 text-grey">Manage your gym ㅇ and their lesson schedules.</p>
+        <h1 class="text-h4 font-weight-bold text-grey-darken-4 mb-2">회원 목록</h1>
+        <p class="text-body-1 text-grey">체육관 랜덤 청소 로테이션 생성기</p>
       </div>
 
       <excel-btn-group />
@@ -45,27 +45,29 @@
 
           <template #item.actions="{ item }">
             <div class="d-flex gap-2">
-              <v-btn
-                variant="text"
-                color="primary"
-                size="small"
-                class="text-none"
-                @click="editMember(item)"
-              >
-                Edit
-              </v-btn>
+              <member-dialog v-bind="{ member: item, length: members.length }" @save="handleMember">
+                <template #activator="props">
+                  <v-btn
+                    v-bind="props"
+                    variant="text"
+                    color="primary"
+                    size="small"
+                    class="text-none"
+                  >
+                    Edit
+                  </v-btn>
+                </template>
+              </member-dialog>
 
               <v-divider vertical class="mx-1" />
 
-              <v-btn
-                variant="text"
-                color="error"
-                size="small"
-                class="text-none"
-                @click="confirmDelete(item)"
-              >
-                Delete
-              </v-btn>
+              <member-delete-dialog v-bind="{ member: item }" @delete="deleteMember">
+                <template #activator="props">
+                  <v-btn v-bind="props" variant="text" color="error" size="small" class="text-none">
+                    Delete
+                  </v-btn>
+                </template>
+              </member-delete-dialog>
             </div>
           </template>
 
@@ -83,7 +85,7 @@
         </v-data-table>
       </v-card>
 
-      <member-dialog @save="addMember">
+      <member-dialog v-bind="{ length: members.length }" @save="handleMember">
         <template #activator="props">
           <v-btn
             v-bind="props"
@@ -103,8 +105,15 @@
 import { ref, reactive } from 'vue';
 import ExcelBtnGroup from './ExcelBtnGroup.vue';
 import MemberDialog from './MemberDialog.vue';
+import MemberDeleteDialog from './MemberDeleteDialog.vue';
 
 const headers = ref([
+  {
+    title: 'Index',
+    key: '_id',
+    align: 'start',
+    width: '10%',
+  },
   {
     title: 'Name',
     key: 'name',
@@ -125,10 +134,13 @@ const headers = ref([
   },
 ]);
 
-const members = ref([]);
-
-const deleteDialog = ref(false);
-const selectedMember = ref(null);
+const members = ref([
+  {
+    _id: 1,
+    name: 'Ava Morgan',
+    schedule: ['lessonMW'],
+  },
+]);
 
 // Methods
 const getScheduleColor = (schedule) => {
@@ -140,36 +152,35 @@ const getScheduleColor = (schedule) => {
 };
 
 const editMember = (member) => {
-  console.log('Editing member:', member);
-  // Implement edit functionality
-  // Example: open edit dialog or navigate to edit page
+  const index = members.value.findIndex((m) => m._id === member._id);
+  if (index !== -1) {
+    members.value[index] = { ...members.value[index], ...member };
+  }
 };
 
-const confirmDelete = (member) => {
-  selectedMember.value = member;
-  deleteDialog.value = true;
-};
-
-const deleteMember = () => {
-  if (selectedMember.value) {
-    const index = members.value.findIndex((m) => m.id === selectedMember.value.id);
+const deleteMember = (_id) => {
+  if (_id) {
+    const index = members.value.findIndex((m) => m._id === _id);
     if (index > -1) {
       members.value.splice(index, 1);
     }
-    console.log('Deleted member:', selectedMember.value.name);
   }
-  deleteDialog.value = false;
-  selectedMember.value = null;
+};
+
+const handleMember = (member) => {
+  if (members.value.length < member?._id) {
+    addMember(member);
+  } else {
+    editMember(member);
+  }
 };
 
 const addMember = (member) => {
-  console.log('Adding new member');
   members.value.push(member);
 };
 </script>
 
 <style scoped>
-/* Custom styles if needed */
 .v-data-table {
   background-color: transparent;
 }
