@@ -14,13 +14,22 @@
       <v-card elevation="1" class="rounded-lg" width="600px">
         <v-data-table
           :headers="headers"
-          :items="members"
-          :items-per-page="10"
+          :items="pagedMembers"
+          :items-per-page="itemsPerPage"
+          :loading="loading"
           hide-default-footer
           disable-sort
           class="elevation-0"
           item-key="id"
         >
+          <template #item._id="{ item, index }">
+            <div class="py-2">
+              <span class="text-body-1 font-weight-medium text-grey-darken-4">
+                {{ (page - 1) * 10 + index + 1 }}
+              </span>
+            </div>
+          </template>
+
           <template #item.name="{ item }">
             <div class="py-2">
               <span class="text-body-1 font-weight-medium text-grey-darken-4">
@@ -45,7 +54,7 @@
 
           <template #item.actions="{ item }">
             <div class="d-flex gap-2">
-              <member-dialog v-bind="{ member: item, length: members.length }" @save="handleMember">
+              <member-dialog v-bind="{ member: item }" @save="handleMember">
                 <template #activator="props">
                   <v-btn
                     v-bind="props"
@@ -83,6 +92,8 @@
             </div>
           </template>
         </v-data-table>
+
+        <v-pagination v-model="page" :length="length" class="my-4"></v-pagination>
       </v-card>
 
       <member-dialog v-bind="{ length: members.length }" @save="handleMember">
@@ -102,7 +113,7 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue';
+import { ref, computed, watch } from 'vue';
 import ExcelBtnGroup from './ExcelBtnGroup.vue';
 import MemberDialog from './MemberDialog.vue';
 import MemberDeleteDialog from './MemberDeleteDialog.vue';
@@ -134,15 +145,21 @@ const headers = ref([
   },
 ]);
 
-const members = ref([
-  {
-    _id: 1,
-    name: 'Ava Morgan',
-    schedule: ['lessonMW'],
-  },
-]);
+const members = ref([]);
+const page = ref(1);
+const length = ref(Math.floor(members.length / 10) + 1);
+let loading = ref(false);
+const itemsPerPage = 10;
 
-// Methods
+const pagedMembers = computed(() => {
+  const start = (page.value - 1) * itemsPerPage;
+  return members.value.slice(start, start + itemsPerPage);
+});
+
+const generateRandomId = () => {
+  return Date.now() + Math.random();
+};
+
 const getScheduleColor = (schedule) => {
   const scheduleColors = {
     lessonMW: 'blue',
@@ -158,18 +175,23 @@ const editMember = (member) => {
   }
 };
 
-const deleteMember = (_id) => {
+const deleteMember = async (_id) => {
+  loading.value = true;
+
+  await new Promise((resolve) => setTimeout(resolve, 100));
   if (_id) {
     const index = members.value.findIndex((m) => m._id === _id);
     if (index > -1) {
       members.value.splice(index, 1);
     }
   }
+
+  loading.value = false;
 };
 
 const handleMember = (member) => {
-  if (members.value.length < member?._id) {
-    addMember(member);
+  if (!member?._id) {
+    addMember({ ...member, _id: generateRandomId() });
   } else {
     editMember(member);
   }
@@ -179,12 +201,28 @@ const addMember = (member) => {
   members.value.push(member);
 };
 
-const addExcelMembers = (excelMembers) => {
+const addExcelMembers = async (excelMembers) => {
+  loading.value = true;
+
+  await new Promise((resolve) => setTimeout(resolve, 100));
   members.value = [...members.value, ...excelMembers].map((member, i) => ({
     ...member,
-    _id: i + 1,
+    _id: generateRandomId(),
   }));
+
+  loading.value = false;
 };
+
+watch(
+  () => members.value.length,
+  (newLength) => {
+    length.value = Math.ceil(newLength / itemsPerPage);
+    if (page.value > length.value) {
+      page.value = length.value || 1;
+    }
+  },
+  { immediate: true },
+);
 </script>
 
 <style scoped>

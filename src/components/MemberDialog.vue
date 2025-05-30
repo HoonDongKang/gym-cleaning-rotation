@@ -52,11 +52,10 @@ import { ref, computed, defineEmits, defineProps, watch } from 'vue';
 const emit = defineEmits(['save']);
 const props = defineProps<{
   member?: {
-    _id: number;
+    _id: number | null;
     name: string;
     schedule?: string[];
   };
-  length: number;
 }>();
 
 const valid = ref(false);
@@ -65,7 +64,6 @@ const dialog = ref(false);
 const isEditMode = computed(() => !!props.member);
 
 const formData = ref({
-  _id: length + 1,
   name: '',
   lessonMW: false,
   lessonTT: false,
@@ -76,7 +74,6 @@ const canSave = computed(() => formData.value.name.trim() !== '');
 
 const resetForm = () => {
   formData.value = {
-    _id: props.length + 1,
     name: '',
     lessonMW: false,
     lessonTT: false,
@@ -85,7 +82,6 @@ const resetForm = () => {
 
 const fillForm = () => {
   if (props.member) {
-    formData.value._id = props.member._id;
     formData.value.name = props.member.name || '';
     formData.value.lessonMW = props.member.schedule?.includes('lessonMW') ?? false;
     formData.value.lessonTT = props.member.schedule?.includes('lessonTT') ?? false;
@@ -94,22 +90,10 @@ const fillForm = () => {
   }
 };
 
-watch(dialog, (val) => {
-  if (val) fillForm();
-});
-
-watch(
-  () => props.member,
-  () => {
-    if (dialog.value) fillForm();
-  },
-);
-
 const save = () => {
   if (!canSave.value) return;
 
   const memberData = {
-    _id: formData.value._id,
     name: formData.value.name.trim(),
     schedule: [
       ...(formData.value.lessonMW ? ['lessonMW'] : []),
@@ -126,4 +110,15 @@ const close = () => {
   dialog.value = false;
   resetForm();
 };
+
+watch(dialog, (val) => {
+  if (val) fillForm();
+});
+
+watch(
+  () => props.member,
+  () => {
+    if (dialog.value) fillForm();
+  },
+);
 </script>

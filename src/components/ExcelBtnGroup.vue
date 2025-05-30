@@ -34,12 +34,11 @@ const uploadFile = () => {
 };
 
 const createMember = (data) => {
-  if (data.length !== 4) throw new Error('잘못 입력된 회원이 존재합니다.');
-
+  if (data.length !== 3) throw new Error('잘못 입력된 회원이 존재합니다.');
   let schedule = [];
-  if (data[2] === 'O') schedule.push('lessonMW');
-  if (data[3] === 'O') schedule.push('lessonTT');
-  return { _id: data[0], name: data[1], schedule };
+  if (data[1] === 'O') schedule.push('lessonMW');
+  if (data[2] === 'O') schedule.push('lessonTT');
+  return { name: data[0], schedule };
 };
 
 const handleFileChange = async (event) => {
@@ -67,6 +66,8 @@ const handleFileChange = async (event) => {
 
     excelData.value = data;
     emit('save', excelData.value);
+
+    selectedFile.value = null;
   } catch (e) {
     console.error('파일 읽기 오류', e);
   }
