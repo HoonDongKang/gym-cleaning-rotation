@@ -21,15 +21,25 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, defineEmits } from 'vue';
 import ExcelJS from 'exceljs';
 
 const selectedFile = ref(null);
 const fileInput = ref(null);
 const excelData = ref([]);
+const emit = defineEmits('save');
 
 const uploadFile = () => {
   fileInput.value.click();
+};
+
+const createMember = (data) => {
+  if (data.length !== 4) throw new Error('잘못 입력된 회원이 존재합니다.');
+
+  let schedule = [];
+  if (data[2] === 'O') schedule.push('lessonMW');
+  if (data[3] === 'O') schedule.push('lessonTT');
+  return { _id: data[0], name: data[1], schedule };
 };
 
 const handleFileChange = async (event) => {
@@ -50,12 +60,15 @@ const handleFileChange = async (event) => {
       row.eachCell((cell, colNumber) => {
         rowData.push(cell.value);
       });
-      data.push(rowData);
+      if (rowNumber !== 1) {
+        data.push(createMember(rowData));
+      }
     });
 
     excelData.value = data;
+    emit('save', excelData.value);
   } catch (e) {
-    console.error('파일 읽기 오류', error);
+    console.error('파일 읽기 오류', e);
   }
 };
 </script>

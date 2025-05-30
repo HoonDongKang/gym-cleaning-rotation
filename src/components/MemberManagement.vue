@@ -10,7 +10,7 @@
         <p class="text-body-1 text-grey">체육관 랜덤 청소 로테이션 생성기</p>
       </div>
 
-      <excel-btn-group />
+      <excel-btn-group @save="addExcelMembers" />
       <v-card elevation="1" class="rounded-lg" width="600px">
         <v-data-table
           :headers="headers"
@@ -177,6 +177,13 @@ const handleMember = (member) => {
 
 const addMember = (member) => {
   members.value.push(member);
+};
+
+const addExcelMembers = (excelMembers) => {
+  members.value = [...members.value, ...excelMembers].map((member, i) => ({
+    ...member,
+    _id: i + 1,
+  }));
 };
 </script>
 
