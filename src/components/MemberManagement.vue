@@ -10,7 +10,9 @@
         <p class="text-body-1 text-grey">체육관 랜덤 청소 로테이션 생성기</p>
       </div>
 
-      <excel-btn-group @save="addExcelMembers" />
+      <div class="d-flex justify-end mb-4">
+        <excel-btn-group v-bind="{ members }" @save="addExcelMembers" />
+      </div>
       <v-card elevation="1" class="rounded-lg" width="600px">
         <v-data-table
           :headers="headers"
