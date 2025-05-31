@@ -1,19 +1,12 @@
 <template>
-  <v-container
-    class="fill-height"
-    style="display: flex; justify-content: center; align-items: flex-start; padding-top: 2rem"
-  >
-    <div style="max-width: 1200px; width: 100%">
-      <!-- Page Header -->
-      <div class="mb-6 text-center">
-        <h1 class="text-h4 font-weight-bold text-grey-darken-4 mb-2">회원 목록</h1>
-        <p class="text-body-1 text-grey">체육관 랜덤 청소 로테이션 생성기</p>
-      </div>
-
-      <div class="d-flex justify-end mb-4">
-        <excel-btn-group v-bind="{ members }" @save="addExcelMembers" />
-      </div>
-      <v-card elevation="1" class="rounded-lg" width="600px">
+  <div class="d-flex justify-space-between align-center mb-6">
+    <div class="d-flex align-center">
+      <excel-btn-group v-bind="{ members }" @save="addExcelMembers" />
+    </div>
+  </div>
+  <v-row>
+    <v-col cols="12">
+      <v-card elevation="1" class="rounded-lg">
         <v-data-table
           :headers="headers"
           :items="pagedMembers"
@@ -97,21 +90,21 @@
 
         <v-pagination v-model="page" :length="length" class="my-4"></v-pagination>
       </v-card>
+    </v-col>
+  </v-row>
 
-      <member-dialog v-bind="{ length: members.length }" @save="handleMember">
-        <template #activator="props">
-          <v-btn
-            v-bind="props"
-            icon
-            color="primary"
-            style="position: absolute; bottom: 16px; right: 16px"
-          >
-            <v-icon>mdi-plus</v-icon>
-          </v-btn>
-        </template>
-      </member-dialog>
-    </div>
-  </v-container>
+  <member-dialog v-bind="{ length: members.length }" @save="handleMember">
+    <template #activator="props">
+      <v-btn
+        v-bind="props"
+        icon
+        color="primary"
+        style="position: absolute; bottom: 16px; right: 16px"
+      >
+        <v-icon>mdi-plus</v-icon>
+      </v-btn>
+    </template>
+  </member-dialog>
 </template>
 
 <script setup>

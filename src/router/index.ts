@@ -1,5 +1,4 @@
-import CleaningSchedule from '@/components/CleaningSchedule.vue';
-import MemberManagement from '@/components/MemberManagement.vue';
+import MainView from '@/views/MainView.vue';
 import { createRouter, createWebHistory } from 'vue-router';
 
 const router = createRouter({
@@ -7,14 +6,14 @@ const router = createRouter({
   routes: [
     {
       path: '/',
-      name: 'users',
-      component: MemberManagement,
+      name: 'main',
+      component: MainView,
     },
-    {
-      path: '/schedule',
-      name: 'schedule',
-      component: CleaningSchedule,
-    },
+    // {
+    //   path: '/schedule',
+    //   name: 'schedule',
+    //   component: CleaningSchedule,
+    // },
   ],
 });
 

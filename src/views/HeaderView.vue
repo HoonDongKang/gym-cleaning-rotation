@@ -13,7 +13,7 @@
       <v-toolbar flat color="transparent" class="pa-0 ma-0 elevation-0 transparent-toolbar">
         <v-toolbar-title class="text-h6 font-weight-bold text-grey-darken-4">
           Cleaning Gym
-        </v-toolbar-title>
+        </v-toolbar-title @click="">
       </v-toolbar>
     </div>
 
