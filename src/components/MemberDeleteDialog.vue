@@ -20,7 +20,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, defineProps } from 'vue';
+import { ref, defineProps, defineEmits } from 'vue';
 
 const dialog = ref(false);
 const props = defineProps<{
