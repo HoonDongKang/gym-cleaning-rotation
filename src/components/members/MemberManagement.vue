@@ -106,10 +106,12 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue';
+import { ref, defineEmits, computed, watch } from 'vue';
 import ExcelBtnGroup from './ExcelBtnGroup.vue';
 import MemberDialog from './MemberDialog.vue';
 import MemberDeleteDialog from './MemberDeleteDialog.vue';
+
+const emit = defineEmits(['update']);
 
 const headers = ref([
   {
@@ -166,6 +168,8 @@ const editMember = (member) => {
   if (index !== -1) {
     members.value[index] = { ...members.value[index], ...member };
   }
+
+  emit('update', members.value);
 };
 
 const deleteMember = async (_id) => {
@@ -178,6 +182,8 @@ const deleteMember = async (_id) => {
       members.value.splice(index, 1);
     }
   }
+
+  emit('update', members.value);
 
   loading.value = false;
 };
@@ -192,6 +198,8 @@ const handleMember = (member) => {
 
 const addMember = (member) => {
   members.value.push(member);
+
+  emit('update', members.value);
 };
 
 const addExcelMembers = async (excelMembers) => {
@@ -202,6 +210,8 @@ const addExcelMembers = async (excelMembers) => {
     ...member,
     _id: generateRandomId(),
   }));
+
+  emit('update', members.value);
 
   loading.value = false;
 };

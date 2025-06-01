@@ -14,7 +14,7 @@
       </v-col>
       <v-col cols="12" lg="10" xl="8">
         <!-- 상단 통계 카드 -->
-        <member-statistics />
+        <member-statistics v-bind="{ members }" />
         <!-- 메인 컨텐츠 카드 -->
         <v-card elevation="2" class="overflow-hidden">
           <v-tabs v-model="activeTab" bg-color="grey-lighten-4" color="primary" grow>
@@ -31,7 +31,7 @@
           <v-card-text class="pa-6">
             <v-window v-model="activeTab">
               <v-window-item value="members">
-                <member-management />
+                <member-management @update="updateMembers" />
               </v-window-item>
 
               <v-window-item value="schedule">
@@ -59,120 +59,10 @@ import MemberManagement from '@/components/members/MemberManagement.vue';
 
 // 활성 탭 상태 관리
 const activeTab = ref('members');
+const members = ref([]);
 
-// 다이얼로그 상태
-const showAddDialog = ref(false);
-const editingMember = ref(null);
-
-// 레슨 타입
-const lessonTypes = ['월/수 레슨', '화/목 레슨'];
-
-// 회원 데이터
-const members = ref([
-  {
-    id: 1,
-    name: '김철수',
-    phone: '010-1234-5678',
-    email: 'kim@example.com',
-    lessonType: '월/수 레슨',
-  },
-  {
-    id: 2,
-    name: '이영희',
-    phone: '010-9876-5432',
-    email: 'lee@example.com',
-    lessonType: '화/목 레슨',
-  },
-  {
-    id: 3,
-    name: '박민수',
-    phone: '010-5555-1234',
-    email: 'park@example.com',
-    lessonType: '월/수 레슨',
-  },
-  {
-    id: 4,
-    name: '최지우',
-    phone: '010-7777-8888',
-    email: 'choi@example.com',
-    lessonType: '화/목 레슨',
-  },
-  {
-    id: 5,
-    name: '정하나',
-    phone: '010-3333-4444',
-    email: 'jung@example.com',
-    lessonType: '월/수 레슨',
-  },
-]);
-
-// 폼 데이터
-const memberForm = reactive({
-  name: '',
-  phone: '',
-  email: '',
-  lessonType: '',
-});
-
-// 레슨 타입에 따른 색상 반환
-const getLessonColor = (lessonType) => {
-  return lessonType === '월/수 레슨' ? 'blue' : 'green';
-};
-
-// 회원 추가/수정
-const saveMember = () => {
-  if (editingMember.value) {
-    // 수정
-    const index = members.value.findIndex((m) => m.id === editingMember.value.id);
-    if (index !== -1) {
-      members.value[index] = {
-        ...editingMember.value,
-        ...memberForm,
-      };
-    }
-  } else {
-    // 추가
-    const newId = Math.max(...members.value.map((m) => m.id)) + 1;
-    members.value.push({
-      id: newId,
-      ...memberForm,
-    });
-  }
-  closeDialog();
-};
-
-// 회원 수정
-const editMember = (member) => {
-  editingMember.value = member;
-  Object.assign(memberForm, member);
-  showAddDialog.value = true;
-};
-
-// 회원 삭제
-const deleteMember = (id) => {
-  if (confirm('정말로 이 회원을 삭제하시겠습니까?')) {
-    const index = members.value.findIndex((m) => m.id === id);
-    if (index !== -1) {
-      members.value.splice(index, 1);
-    }
-  }
-};
-
-// 다이얼로그 닫기
-const closeDialog = () => {
-  showAddDialog.value = false;
-  editingMember.value = null;
-  Object.assign(memberForm, {
-    name: '',
-    phone: '',
-    email: '',
-    lessonType: '',
-  });
-};
-
-// 샘플 데이터 내보내기
-const exportData = () => {
-  console.log('샘플 데이터 내보내기');
+const updateMembers = (payload) => {
+  members.value = [...payload];
 };
 </script>
 
