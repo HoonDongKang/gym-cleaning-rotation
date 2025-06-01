@@ -1,36 +1,59 @@
 <template>
-  <v-btn class="mr-3" color="primary" href="/sample.xlsx" download>
-    <template v-slot:prepend>
-      <v-icon>mdi-download</v-icon>
-    </template>
-    양식 다운로드
-  </v-btn>
-  <v-btn class="mr-3" color="primary" @click="uploadFile">
-    <template v-slot:prepend>
-      <v-icon>mdi-microsoft-excel</v-icon>
-    </template>
-    엑셀 업로드
-    <v-file-input
-      ref="fileInput"
-      id="file-input"
-      v-model="selectedFile"
-      @change="handleFileChange"
-      style="display: none"
-    />
-  </v-btn>
-  <v-btn color="primary" @click="exportFile">
-    <template v-slot:prepend>
-      <v-icon>mdi-share</v-icon>
-    </template>
-    회원 목록 다운로드
-  </v-btn>
+  <v-row align="center">
+    <v-col class="d-flex" cols="6">
+      <member-dialog
+        v-bind="{ length: members.length }"
+        @save="(payload) => emit('saveDialog', payload)"
+      >
+        <template #activator="props">
+          <v-btn v-bind="props" color="black" elevation="0" class="mr-2">
+            <template v-slot:prepend>
+              <v-icon>mdi-plus</v-icon>
+            </template>
+            회원 추가
+          </v-btn>
+        </template>
+      </member-dialog>
+
+      <v-btn variant="outlined" @click="uploadFile" elevation="0">
+        <template v-slot:prepend>
+          <v-icon>mdi-microsoft-excel</v-icon>
+        </template>
+        엑셀 업로드
+        <v-file-input
+          ref="fileInput"
+          id="file-input"
+          v-model="selectedFile"
+          @change="handleFileChange"
+          style="display: none"
+        />
+      </v-btn>
+    </v-col>
+
+    <v-col class="d-flex justify-end" cols="6">
+      <v-btn variant="outlined" elevation="0" href="/sample.xlsx" download class="mr-2">
+        <template v-slot:prepend>
+          <v-icon>mdi-download</v-icon>
+        </template>
+        양식 다운로드
+      </v-btn>
+
+      <v-btn variant="outlined" @click="exportFile" elevation="0">
+        <template v-slot:prepend>
+          <v-icon>mdi-share</v-icon>
+        </template>
+        회원 목록 다운로드
+      </v-btn>
+    </v-col>
+  </v-row>
 </template>
 
 <script setup>
 import { ref, defineEmits, defineProps } from 'vue';
 import ExcelJS from 'exceljs';
+import MemberDialog from './MemberDialog.vue';
 
-const emit = defineEmits(['save']);
+const emit = defineEmits(['saveExcel', 'saveDialog']);
 const props = defineProps(['members']);
 
 const selectedFile = ref(null);
@@ -73,7 +96,7 @@ const handleFileChange = async (event) => {
     });
 
     excelData.value = data;
-    emit('save', excelData.value);
+    emit('saveExcel', excelData.value);
 
     selectedFile.value = null;
   } catch (e) {
@@ -83,7 +106,6 @@ const handleFileChange = async (event) => {
 
 const exportFile = async () => {
   try {
-    console.log(props.members);
     if (!props?.members.length) return;
     const members = props.members;
     const workbook = new ExcelJS.Workbook();

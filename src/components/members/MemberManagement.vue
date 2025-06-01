@@ -1,8 +1,6 @@
 <template>
-  <div class="d-flex justify-space-between align-center mb-6">
-    <div class="d-flex align-center">
-      <excel-btn-group v-bind="{ members }" @save="addExcelMembers" />
-    </div>
+  <div>
+    <excel-btn-group v-bind="{ members }" @saveExcel="addExcelMembers" @saveDialog="handleMember" />
   </div>
   <v-row>
     <v-col cols="12">
@@ -93,7 +91,7 @@
     </v-col>
   </v-row>
 
-  <member-dialog v-bind="{ length: members.length }" @save="handleMember">
+  <!-- <member-dialog v-bind="{ length: members.length }" @save="handleMember">
     <template #activator="props">
       <v-btn
         v-bind="props"
@@ -104,7 +102,7 @@
         <v-icon>mdi-plus</v-icon>
       </v-btn>
     </template>
-  </member-dialog>
+  </member-dialog> -->
 </template>
 
 <script setup>
