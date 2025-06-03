@@ -15,8 +15,8 @@
       <v-col cols="12" lg="10" xl="8">
         <!-- 상단 통계 카드 -->
         <member-statistics v-bind="{ members }" />
-        <!-- 메인 컨텐츠 카드 -->
-        <v-card elevation="2" class="overflow-hidden">
+
+        <v-card elevation="2" class="overflow-hidden" min-width="700px">
           <v-tabs v-model="activeTab" bg-color="grey-lighten-4" color="primary" grow>
             <v-tab value="members">
               <v-icon class="mr-2">mdi-account-group</v-icon>
@@ -35,14 +35,15 @@
               </v-window-item>
 
               <v-window-item value="schedule">
-                <div class="text-center py-8">
+                <schedule-management />
+                <!-- <div class="text-center py-8">
                   <v-icon size="64" color="grey-lighten-2">mdi-calendar-clock</v-icon>
                   <h3 class="text-h6 text-grey mt-4">청소 스케줄 기능</h3>
                   <p class="text-body-2 text-grey mt-2">
                     회원 관리에서 등록된 회원들을 기반으로<br />
                     청소 스케줄을 자동 생성합니다.
                   </p>
-                </div>
+                </div> -->
               </v-window-item>
             </v-window>
           </v-card-text>
@@ -56,6 +57,7 @@
 import { ref, reactive } from 'vue';
 import MemberStatistics from '@/components/members/MemberStatistics.vue';
 import MemberManagement from '@/components/members/MemberManagement.vue';
+import ScheduleManagement from '@/components/schedules/ScheduleManagement.vue';
 
 // 활성 탭 상태 관리
 const activeTab = ref('members');
