@@ -31,8 +31,10 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, watch, defineEmits } from 'vue';
 import { useDayjs } from '@/utils/dayjs';
+
+const emit = defineEmits(['update']);
 
 const dayjs = useDayjs();
 const currentDate = ref(dayjs());
@@ -44,4 +46,12 @@ const previousMonth = () => {
 const nextMonth = () => {
   currentDate.value = currentDate.value.add(1, 'month');
 };
+
+watch(
+  currentDate,
+  (newDate) => {
+    emit('update', newDate);
+  },
+  { immediate: true },
+);
 </script>
