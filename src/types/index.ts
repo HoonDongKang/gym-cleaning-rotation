@@ -1,22 +1,15 @@
-// export interface Member {
-//   id: string;
-//   name: string;
-//   monWedLesson: boolean;
-//   tueThurLesson: boolean;
-//   phone?: string;
-//   email?: string;
-//   joinDate: Date;
-// }
+type MemberSchedule = {
+  id: string;
+  title: string;
+  start: string;
+  backgroundColor?: string;
+  borderColor?: string;
+};
 
-// export interface CleaningSchedule {
-//   id: string;
-//   date: Date;
-//   members: Member[];
-//   dayOfWeek: 'monday' | 'tuesday' | 'wednesday' | 'thursday';
-// }
+type Member = {
+  id: string;
+  name: string;
+  schedule: string[];
+};
 
-// export interface MonthlySchedule {
-//   year: number;
-//   month: number;
-//   schedules: CleaningSchedule[];
-// }
+export type { MemberSchedule, Member };

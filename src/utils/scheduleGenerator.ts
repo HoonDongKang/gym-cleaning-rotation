@@ -1,83 +1,186 @@
-// import { Member, MonthlySchedule, CleaningSchedule } from '@/types';
+import type { Member, MemberSchedule } from '@/types';
+import { useDayjs } from './dayjs';
 
-// export function generateMonthlySchedule(
-//   members: Member[],
-//   year: number,
-//   month: number,
-// ): MonthlySchedule {
-//   const schedules: CleaningSchedule[] = [];
-//   const memberRotation: { [key: string]: Date | null } = {};
+type GenerateMonthlyScheduleParams = {
+  members: Member[];
+  currentDate: string;
+};
 
-//   // 회원별 마지막 청소 날짜 초기화
-//   members.forEach((member) => {
-//     memberRotation[member.id] = null;
-//   });
+let eventGuid = 0;
+const CLEANING_DAYS = [1, 2, 3, 4];
+const dayjs = useDayjs();
 
-//   // 해당 월의 월~목 날짜들 구하기
-//   const startDate = new Date(year, month, 1);
-//   const endDate = new Date(year, month + 1, 0);
+export function initMemberSchedule(member: Member): MemberSchedule {
+  return {
+    id: String(eventGuid++),
+    title: member.name,
+    start: '',
+    backgroundColor: '#3788d8',
+    borderColor: '#3788d8',
+  };
+}
 
-//   const weekdays = [];
+/**
+ * 1. 설정된 월의 스케쥴을 작성한다.
+ * 2. 청소는 월, 화, 수, 목 만 수행한다.
+ * 3. 모든 회원은 월 1회만 청소를 수행한다.
+ * 4. 월/수 레슨 회원은 월 혹은 수요일에 청소를 수행한다.
+ * 5. 화/목 레슨 회원은 화 혹은 목요일에 청소를 수행한다.
+ */
+export function generateMonthlySchedule({
+  members,
+  currentDate,
+}: GenerateMonthlyScheduleParams): MemberSchedule[] {
+  /**
+   * 1. 해당 달의 [월/수], [화/목] [나머지] 청소 날짜를 구한다.
+   * 2. [레슨X], [모든 레슨], [레슨MW], [레슨TT]로 회원 구분
+   * 3. [레슨MW], [레슨TT] 회원 분배 (월/수, 화/목)
+   * 4. [모든 레슨] 분배 (월,화,수,목 중 비어있는 곳으로)
+   * 5. [레슨X] 분배 (월,화,수,목 중 비어있는 곳으로)
+   *
+   * - 비어 있는 곳
+   * - 레슨 일자 수 / 레슨 회원 수가 평균치
+   * - 만약 평균치보다 적은 회원이 할당되었을 경우 비어있는 곳이라 판단
+   */
 
-//   for (let date = new Date(startDate); date <= endDate; date.setDate(date.getDate() + 1)) {
-//     const dayOfWeek = date.getDay();
-//     // 월(1), 화(2), 수(3), 목(4)만 포함
-//     if (dayOfWeek >= 1 && dayOfWeek <= 4) {
-//       weekdays.push({
-//         date: new Date(date),
-//         dayOfWeek: ['', 'monday', 'tuesday', 'wednesday', 'thursday'][dayOfWeek] as
-//           | 'monday'
-//           | 'tuesday'
-//           | 'wednesday'
-//           | 'thursday',
-//       });
-//     }
-//   }
+  const { cleaningDates, lessonMTDates, lessonTTDates } = getCleaningDates(
+    currentDate,
+    CLEANING_DAYS,
+  );
 
-//   // 각 날짜에 대해 청소 담당자 배정
-//   weekdays.forEach(({ date, dayOfWeek }) => {
-//     const availableMembers = members.filter((member) => {
-//       // 해당 요일 레슨을 받는 회원만 필터링
-//       if (dayOfWeek === 'monday' || dayOfWeek === 'wednesday') {
-//         return member.monWedLesson;
-//       } else if (dayOfWeek === 'tuesday' || dayOfWeek === 'thursday') {
-//         return member.tueThurLesson;
-//       }
-//       return false;
-//     });
+  const { nonLessonMembers, allLessonMembers, lessonMWMembers, lessonTTMembers } =
+    getSeparatedMembers(members);
 
-//     // 마지막 청소일로부터 가장 오래된 순으로 정렬
-//     availableMembers.sort((a, b) => {
-//       const aLastCleaning = memberRotation[a.id];
-//       const bLastCleaning = memberRotation[b.id];
+  const schedules: MemberSchedule[] = [];
+  const dateAssignments = new Map<string, Member[]>();
 
-//       if (!aLastCleaning && !bLastCleaning) return 0;
-//       if (!aLastCleaning) return -1;
-//       if (!bLastCleaning) return 1;
+  // 모든 청소 날짜 초기화
+  [...lessonMTDates, ...lessonTTDates].forEach((date) => {
+    dateAssignments.set(date, []);
+  });
 
-//       return aLastCleaning.getTime() - bLastCleaning.getTime();
-//     });
+  // 3. 레슨MW 회원들을 월/수 날짜에 분배
+  distributeMembersToLessonDates(lessonMWMembers, lessonMTDates, dateAssignments, schedules);
 
-//     // 하루에 3-4명 배정 (가용 인원에 따라 조정)
-//     const assignCount = Math.min(4, Math.max(3, Math.floor(availableMembers.length / 8)));
-//     const assignedMembers = availableMembers.slice(0, assignCount);
+  // 4. 레슨TT 회원들을 화/목 날짜에 분배
+  distributeMembersToLessonDates(lessonTTMembers, lessonTTDates, dateAssignments, schedules);
 
-//     // 배정된 회원들의 마지막 청소일 업데이트
-//     assignedMembers.forEach((member) => {
-//       memberRotation[member.id] = new Date(date);
-//     });
+  // 5. 모든 레슨 회원들을 비어있는 곳에 분배
+  const allCleaningDates = [...lessonMTDates, ...lessonTTDates];
+  distributeFlexibleMembers(allLessonMembers, allCleaningDates, dateAssignments, schedules);
 
-//     schedules.push({
-//       id: `${date.getTime()}`,
-//       date: new Date(date),
-//       members: assignedMembers,
-//       dayOfWeek,
-//     });
-//   });
+  // 6. 레슨X 회원들을 비어있는 곳에 분배
+  distributeFlexibleMembers(nonLessonMembers, allCleaningDates, dateAssignments, schedules);
 
-//   return {
-//     year,
-//     month: month + 1, // 표시용으로 1 증가
-//     schedules,
-//   };
-// }
+  return schedules;
+}
+
+// 특정 레슨 타입 회원들을 해당 요일에 분배
+function distributeMembersToLessonDates(
+  members: Member[],
+  availableDates: string[],
+  dateAssignments: Map<string, Member[]>,
+  schedules: MemberSchedule[],
+) {
+  members.forEach((member, index) => {
+    const dateIndex = index % availableDates.length;
+    const assignedDate = availableDates[dateIndex];
+
+    const assignedMembers = dateAssignments.get(assignedDate) || [];
+    assignedMembers.push(member);
+    dateAssignments.set(assignedDate, assignedMembers);
+
+    const schedule = initMemberSchedule(member);
+    schedule.start = assignedDate;
+    schedules.push(schedule);
+  });
+}
+
+// 유연한 회원들(모든 레슨, 레슨X)을 비어있는 날짜에 분배
+function distributeFlexibleMembers(
+  members: Member[],
+  availableDates: string[],
+  dateAssignments: Map<string, Member[]>,
+  schedules: MemberSchedule[],
+) {
+  members.forEach((member) => {
+    // 가장 적은 인원이 할당된 날짜 찾기
+    const leastAssignedDate = findLeastAssignedDate(availableDates, dateAssignments);
+
+    const assignedMembers = dateAssignments.get(leastAssignedDate) || [];
+    assignedMembers.push(member);
+    dateAssignments.set(leastAssignedDate, assignedMembers);
+
+    const schedule = initMemberSchedule(member);
+    schedule.start = leastAssignedDate;
+    schedules.push(schedule);
+  });
+}
+
+// 가장 적은 인원이 할당된 날짜 찾기
+function findLeastAssignedDate(dates: string[], dateAssignments: Map<string, Member[]>): string {
+  return dates.reduce((leastDate, currentDate) => {
+    const leastCount = dateAssignments.get(leastDate)?.length || 0;
+    const currentCount = dateAssignments.get(currentDate)?.length || 0;
+    return currentCount < leastCount ? currentDate : leastDate;
+  });
+}
+
+function getCleaningDates(date: string, days: number[]) {
+  const cleaningDates: string[] = [];
+  const lessonMTDates: string[] = [];
+  const lessonTTDates: string[] = [];
+
+  let currentDate = dayjs(date).startOf('month');
+
+  const daysInMonth = currentDate.daysInMonth();
+  for (let day = 1; day <= daysInMonth; day++) {
+    const dayOfWeek = currentDate.day();
+
+    if (days.includes(dayOfWeek)) {
+      switch (dayOfWeek) {
+        case 1:
+        case 3:
+          lessonMTDates.push(currentDate.format('YYYY-MM-DD'));
+          break;
+        case 2:
+        case 4:
+          lessonTTDates.push(currentDate.format('YYYY-MM-DD'));
+          break;
+        default:
+          cleaningDates.push(currentDate.format('YYYY-MM-DD'));
+          break;
+      }
+    }
+
+    currentDate = currentDate.add(1, 'day');
+  }
+
+  return { cleaningDates, lessonMTDates, lessonTTDates };
+}
+
+function getSeparatedMembers(members: Member[]) {
+  const nonLessonMembers: Member[] = [];
+  const allLessonMembers: Member[] = [];
+  const lessonMWMembers: Member[] = [];
+  const lessonTTMembers: Member[] = [];
+
+  members.forEach((member) => {
+    if (member.schedule.length === 0) {
+      nonLessonMembers.push(member);
+    } else if (member.schedule.length === 2) {
+      allLessonMembers.push(member);
+    } else if (member.schedule.includes('lessonMW')) {
+      lessonMWMembers.push(member);
+    } else if (member.schedule.includes('lessonTT')) {
+      lessonTTMembers.push(member);
+    }
+  });
+
+  return {
+    nonLessonMembers,
+    allLessonMembers,
+    lessonMWMembers,
+    lessonTTMembers,
+  };
+}

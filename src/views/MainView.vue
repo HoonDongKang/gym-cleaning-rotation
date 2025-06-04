@@ -35,15 +35,7 @@
               </v-window-item>
 
               <v-window-item value="schedule">
-                <schedule-management />
-                <!-- <div class="text-center py-8">
-                  <v-icon size="64" color="grey-lighten-2">mdi-calendar-clock</v-icon>
-                  <h3 class="text-h6 text-grey mt-4">청소 스케줄 기능</h3>
-                  <p class="text-body-2 text-grey mt-2">
-                    회원 관리에서 등록된 회원들을 기반으로<br />
-                    청소 스케줄을 자동 생성합니다.
-                  </p>
-                </div> -->
+                <schedule-management v-bind="{ members }" />
               </v-window-item>
             </v-window>
           </v-card-text>
