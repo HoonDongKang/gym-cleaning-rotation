@@ -28,7 +28,13 @@
           스케줄 생성
         </v-btn>
 
-        <v-btn elevation="0" class="mr-2" variant="outlined" prepend-icon="mdi-download">
+        <v-btn
+          elevation="0"
+          class="mr-2"
+          variant="outlined"
+          prepend-icon="mdi-download"
+          @click="exportSchedule"
+        >
           내보내기
         </v-btn>
       </div>
@@ -40,7 +46,7 @@
 import { ref, watch, defineEmits } from 'vue';
 import { useDayjs } from '@/utils/dayjs';
 
-const emit = defineEmits(['update', 'generate']);
+const emit = defineEmits(['update', 'generate', 'export']);
 
 const dayjs = useDayjs();
 const currentDate = ref(dayjs());
@@ -55,6 +61,10 @@ const nextMonth = () => {
 
 const generateSchedule = () => {
   emit('generate');
+};
+
+const exportSchedule = () => {
+  emit('export');
 };
 
 watch(

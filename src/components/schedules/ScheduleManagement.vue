@@ -1,6 +1,10 @@
 <template>
   <div class="calendar-app">
-    <schedule-btn-group @update="handleDateUpdate" @generate="generateSchedule" />
+    <schedule-btn-group
+      @update="handleDateUpdate"
+      @generate="generateSchedule"
+      @export="exportSchedule"
+    />
     <div class="calendar-container">
       <FullCalendar
         v-if="calendarReady"
@@ -15,6 +19,7 @@
 
 <script setup>
 import { ref, onMounted, nextTick, computed, defineProps } from 'vue';
+import ExcelJS from 'exceljs';
 import { useDayjs } from '@/utils/dayjs';
 import FullCalendar from '@fullcalendar/vue3';
 import dayGridPlugin from '@fullcalendar/daygrid';
@@ -116,6 +121,50 @@ function clearGeneratedSchedules() {
   }
 }
 
+async function exportSchedule() {
+  const dayNames = ['일', '월', '화', '수', '목', '금', '토'];
+  const groupingSchedules = new Map();
+  const calendarApi = fullCalendar.value.getApi();
+  const existingEvents = calendarApi.getEvents();
+  const schedules = existingEvents
+    .map((event) => ({
+      title: event.title,
+      start: event.startStr,
+    }))
+    .sort((a, b) => dayjs(a.start).valueOf() - dayjs(b.start).valueOf());
+
+  schedules.forEach((schedule) => {
+    const date = schedule.start;
+    const name = schedule.title;
+
+    const existing = groupingSchedules.get(date) || [];
+    groupingSchedules.set(date, [...existing, name]);
+  });
+
+  try {
+    if (!schedules?.length) return;
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('청소 스케쥴');
+    worksheet.addRow(['날짜', '요일', '청소 담당자']);
+
+    groupingSchedules.forEach((value, key) => {
+      const dayIndex = dayjs(key).day();
+      const dayText = dayNames[dayIndex];
+      worksheet.addRow([key, dayText, value.join(', ')]);
+    });
+
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer]);
+    const link = document.createElement('a');
+    const month = dayjs(currentDate.value).month();
+    link.href = URL.createObjectURL(blob);
+    link.download = `${month + 1}월_회원목록.xlsx`;
+    link.click();
+    URL.revokeObjectURL(link.href);
+  } catch (e) {
+    console.error('파일 읽기 오류', e);
+  }
+}
 // 캘린더 옵션을 computed로 변경하여 반응성 확보
 const calendarOptions = computed(() => ({
   plugins: [dayGridPlugin, interactionPlugin],
