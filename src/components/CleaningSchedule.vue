@@ -164,11 +164,6 @@ export default defineComponent({
       // 성능 최적화된 날짜 포맷팅
       const date = info.event.start;
       const dateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-
-      console.log(`${info.event.title}이(가) ${dateStr}로 이동되었습니다.`);
-
-      // 서버 업데이트를 비동기로 처리
-      this.updateEventOnServer(info.event);
     },
 
     // 서버 업데이트 (비동기)
