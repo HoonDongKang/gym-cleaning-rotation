@@ -158,7 +158,7 @@ async function exportSchedule() {
     const link = document.createElement('a');
     const month = dayjs(currentDate.value).month();
     link.href = URL.createObjectURL(blob);
-    link.download = `${month + 1}월_회원목록.xlsx`;
+    link.download = `${month + 1}월_청소표.xlsx`;
     link.click();
     URL.revokeObjectURL(link.href);
   } catch (e) {
